@@ -1,9 +1,8 @@
 package com.website.online.sale.controller;
 
+import com.website.online.sale.dtos.request.UserLoginRequest;
 import com.website.online.sale.dtos.response.CheckLoginResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.website.online.sale.service.UserService;
 
 @RestController
@@ -19,11 +18,10 @@ public class UserController {
         return userService.getAllUser();
     }
 
-    @GetMapping("/api/v1/check_login")
+    @PostMapping("/api/v1/check_login")
     public CheckLoginResponse checkLogin (
-            @RequestParam(name = "username") String username,
-            @RequestParam(name = "password") String pass
+            @RequestBody UserLoginRequest request
     ){
-        return userService.checkLogin(username, pass);
+        return userService.checkLogin(request.getUsername(), request.getPassword());
     }
 }
