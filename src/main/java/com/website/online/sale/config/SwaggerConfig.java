@@ -16,8 +16,8 @@ import io.swagger.v3.oas.models.info.Info;
         security = @SecurityRequirement(name = "Bearer Authentication"),
         servers = {
                 @Server(url = "http://127.0.0.1:8080/", description = "Local"),
-                @Server(url = "https://employee-service-api.ghtklab.com/", description = "Testing"),
-                @Server(url = "https://employee-service-api.ghtk.vn/", description = "Production")
+                @Server(url = "https://car-service-api.pro.com/", description = "Testing"),
+                @Server(url = "https://employee-service-api.pro.vn/", description = "Production")
         }
 )
 @SecurityScheme(
@@ -32,7 +32,7 @@ public class SwaggerConfig {
     public OpenAPI usersMicroserviceOpenAPI() {
         return new OpenAPI()
                 .info(new Info().
-                        title("Employee Service Api")
+                        title("Web Car Service Api")
                         .version("1.0"))
                 ;
     }
