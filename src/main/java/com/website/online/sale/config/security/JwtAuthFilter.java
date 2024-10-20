@@ -1,6 +1,8 @@
 package com.website.online.sale.config.security;
 
+import com.website.online.sale.base.ResponseBuilder;
 import com.website.online.sale.service.security.PermissionService;
+import com.website.online.sale.utils.JsonUtils;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -52,7 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setCharacterEncoding("UTF-8");
                 response.setContentType("text/plain; charset=UTF-8");
-                response.getWriter().write("Token quá hạn hoặc không hợp lệ để thực hiện chức năng này.");
+                response.getWriter().write(JsonUtils.stringify(ResponseBuilder.error(401,"Token quá hạn hoặc không hợp lệ để thực hiện chức năng này." )));
                 return;
             }
         } else {

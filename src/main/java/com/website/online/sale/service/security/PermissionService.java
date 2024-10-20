@@ -9,6 +9,7 @@ import java.util.Objects;
 
 @Service
 public class PermissionService {
+    private final static List<String> scopesService = List.of("car-service:token-success");
     public Object verifyToken(String token) {
 
         Permission payload = Permission.parserFromJWT(token);
@@ -28,7 +29,7 @@ public class PermissionService {
             return HttpStatus.FORBIDDEN.value();
         }
 
-        if (payload.getExp() > currentTimeSeconds){
+        if (payload.getExp() > currentTimeSeconds && payload.getScopes().contains("car-service:token-success")){
             return HttpStatus.OK.value();
         }
 //        if (scopes.contains("super.admin") || scopes.contains("campaign.update.approve") || scopes.contains("all.view")) {
