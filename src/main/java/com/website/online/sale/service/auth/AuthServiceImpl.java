@@ -25,6 +25,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthenticationResponse getToken(UserAuthRequest authRequest) {
+        // check redis còn ko => còn dùng luôn => trả: key:ự đặt(username_cmnn_sdt), value: token
+        // hết hạn or chưa có => gen cái mới
         CheckLoginResponse verifyUser = userService.checkLogin(authRequest.getUsername(), authRequest.getPassword());
         if(verifyUser.getStatus() == Boolean.FALSE) throw new CustomBadRequestException("Username or password is incorrect");
         //TODO: gen accessToken
