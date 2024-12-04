@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
     List<HoaDon> findByIdKhIn(List<Long> idKh);
+
+    List<HoaDon> findByIdKh(Long idKh);
 }

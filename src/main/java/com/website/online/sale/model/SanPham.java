@@ -39,6 +39,12 @@ public class SanPham {
     @Column(name = "image")
     private String image;
 
+    @Column(name = "purchase_price")
+    private Long purchasePrice;
+
+    @Column(name = "sale_count")
+    private Integer saleCount;
+
     @Column(name = "created")
     private Date created;
 

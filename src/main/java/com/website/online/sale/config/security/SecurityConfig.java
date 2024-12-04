@@ -32,7 +32,12 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/api/ping",
             "/api/v1/auth/token",
-            "/"
+            "/",
+            "/api/v1/shopping_cart/**",
+            "/api/v1/product_detail/**",
+            "/api/product_list",
+            "/api/product/query_builder"
+
     };
     private static final String[] EXTERNAL_PROTECTED_URLS = new String[] {
             "/api/v1/**"
@@ -54,7 +59,8 @@ public class SecurityConfig {
                         .requestMatchers(UNPROTECTED_URLS)
                         .permitAll()
                         .requestMatchers(EXTERNAL_PROTECTED_URLS)
-                        .authenticated()
+                                .permitAll()
+//                        .authenticated()
                         .anyRequest()
                         .denyAll()
                 );

@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface HoaDonSanPhamRepository extends JpaRepository<HoaDonSanPham, Long> {
     List<HoaDonSanPham> findByIdHdIn(List<Long> idHd);
+
 }
