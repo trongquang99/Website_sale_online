@@ -9,6 +9,7 @@ public class IndexController {
     public String ok(){
         return "ok";
     }
+
     @GetMapping("/api/ping")
     public String index(){
         return "ping done";
