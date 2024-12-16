@@ -8,6 +8,7 @@ import java.util.List;
 public class ResponseBuilder {
 
     public static final String SUCCESS_MESSAGE = "Thành công!";
+    public static final String ERROR_MESSAGE = "Thất bại!";
 
     public static <T> BaseResponse<T> error(String message) {
         return error(500, message);
@@ -63,6 +64,15 @@ public class ResponseBuilder {
         response.setData(data);
         response.setBefore(before);
         response.setAfter(after);
+        return response;
+    }
+
+    public static <T> BaseListResponse<T> errorList(List<T> data) {
+        BaseListResponse<T> response = new BaseListResponse<>();
+        response.setSuccess(true);
+        response.setCode(400);
+        response.setMessage(ERROR_MESSAGE);
+        response.setData(data);
         return response;
     }
 

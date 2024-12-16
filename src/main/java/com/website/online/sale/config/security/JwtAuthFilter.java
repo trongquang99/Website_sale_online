@@ -50,13 +50,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 //            userDetails = serverSecurityService.get(authToken);
             //TODO: verify token
             var httpStatus = this.permissionService.verifyToken(authToken);
-            if (Objects.equals(httpStatus, 403)) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.setCharacterEncoding("UTF-8");
-                response.setContentType("text/plain; charset=UTF-8");
-                response.getWriter().write(JsonUtils.stringify(ResponseBuilder.error(401,"Token quá hạn hoặc không hợp lệ để thực hiện chức năng này." )));
-                return;
-            }
+//            if (Objects.equals(httpStatus, 403)) {
+//                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//                response.setCharacterEncoding("UTF-8");
+//                response.setContentType("text/plain; charset=UTF-8");
+//                response.getWriter().write(JsonUtils.stringify(ResponseBuilder.error(401,"Token quá hạn hoặc không hợp lệ để thực hiện chức năng này." )));
+//                return;
+//            }
         } else {
             throw new AuthenticationCredentialsNotFoundException("Không tìm thấy token");
         }
@@ -72,6 +72,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return !path.startsWith("/api") || path.startsWith("/api/ping") || path.startsWith("/api/v1/auth/token");
+        return !path.startsWith("/api")
+                || path.startsWith("/api/ping")
+                || path.startsWith("/api/v1/auth/token")
+                || path.startsWith("/api/v1/shopping_cart")
+                || path.startsWith("/api/v1/product_detail")
+                || path.startsWith("/api/product_list")
+                || path.startsWith("/api/product/query_builder");
+
     }
 }

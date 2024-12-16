@@ -1,6 +1,7 @@
 package com.website.online.sale.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
@@ -37,6 +38,12 @@ public class SanPham {
 
     @Column(name = "image")
     private String image;
+
+    @Column(name = "purchase_price")
+    private Long purchasePrice;
+
+    @Column(name = "sale_count")
+    private Integer saleCount;
 
     @Column(name = "created")
     private Date created;
