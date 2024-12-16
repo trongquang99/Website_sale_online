@@ -18,14 +18,21 @@ public class StatisticController {
 
     @GetMapping("/api/v1/customer_statistic")
     public List<CustomerStatisticResponse> getCustomerStatistic() {
-        List<CustomerStatisticResponse> response = customerStatisticService.getCustomerStatistic();
-        return response;
+        try{List<CustomerStatisticResponse> response = customerStatisticService.getCustomerStatistic();
+            return response;
+        }catch(Exception e){
+            return null;
+        }
     }
 
     @GetMapping("/api/v1/product_statistic")
     public List<ProductStatisticResponse> getProductStatistic() {
-        List<ProductStatisticResponse> response = customerStatisticService.getProductStatistic();
-        return response;
+        try{
+            List<ProductStatisticResponse> response = customerStatisticService.getProductStatistic();
+            return response;
+        }catch (Exception e){
+            return  null;
+        }
     }
 
 }

@@ -32,7 +32,7 @@ public class ProductServiceCustom {
         }
 
         if (Objects.nonNull(request.getPrice())) {
-            if (params.isEmpty()) queryBuilder.append("where ");
+            if (params.isEmpty()) queryBuilder.append("where");
             else {
                 queryBuilder.append("and ");
             }

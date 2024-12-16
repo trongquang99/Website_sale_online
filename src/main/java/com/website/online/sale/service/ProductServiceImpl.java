@@ -13,11 +13,13 @@ import com.website.online.sale.repository.ProductDiscountRepository;
 import com.website.online.sale.repository.ProductSpecificationRepository;
 import com.website.online.sale.repository.SanPhamRepository;
 import com.website.online.sale.utils.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@Slf4j
 public class ProductServiceImpl implements ProductService{
     private final SanPhamRepository sanPhamRepository;
     private final ProductServiceCustom productServiceCustom;

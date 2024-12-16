@@ -8,6 +8,7 @@ import com.website.online.sale.model.SanPham;
 import com.website.online.sale.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,8 +47,12 @@ public class ProductController {
             @ParameterObject ListProductReq request
 
     ) {
-        List<ListProductResponse> response = productService.getListProducts(request);
-        return ResponseEntity.ok(ResponseBuilder.successList(response));
+//        try{
+            List<ListProductResponse> response = productService.getListProducts(request);
+            return ResponseEntity.ok(ResponseBuilder.successList(response));
+//        } catch(Exception e) {
+//            log.error(("getListProducts error"));
+//            return ResponseEntity.status(400).body(ResponseBuilder.errorList(null));
+//        }
     }
-
 }

@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.SQLGrammarException;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -110,19 +111,26 @@ public class HttpExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler()
-//    protected ResponseEntity<Object> handleServerError(Throwable e) {
-//        BaseResponse<Object> responseDto = ResponseBuilder.error(99, getErrorWithErrorCode(DEFAULT_ERROR));
-//        log.error("", e);
-//        return new ResponseEntity<>(responseDto, HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-//
-//    @ExceptionHandler({HttpMessageConversionException.class})
-//    protected ResponseEntity<Object> handleHttpMessageConversionException(HttpMessageConversionException e) {
-//        BaseResponse<Object> responseDto = ResponseBuilder.error(99, getErrorWithErrorCode(e.getMessage()));
-//        log.error("", e);
-//        return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
-//    }
+    @ExceptionHandler()
+    protected ResponseEntity<Object> handleServerError(Throwable e) {
+        BaseResponse<Object> responseDto = ResponseBuilder.error(99, getErrorWithErrorCode(DEFAULT_ERROR));
+        log.error("", e);
+        return new ResponseEntity<>(responseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({HttpMessageConversionException.class})
+    protected ResponseEntity<Object> handleHttpMessageConversionException(HttpMessageConversionException e) {
+        BaseResponse<Object> responseDto = ResponseBuilder.error(99, getErrorWithErrorCode(e.getMessage()));
+        log.error("", e);
+        return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({SQLGrammarException.class})
+    protected ResponseEntity<Object> handleSQLGrammarException(SQLGrammarException e) {
+        BaseResponse<Object> responseDto = ResponseBuilder.error(100, "Đã có lỗi xảy ra vs CSDL");
+        log.error("SQLGrammarException caught", e);
+        return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+    }
 
     public static String getErrorWithErrorCode(String message) {
 //        String requestId = MDC.get(LoggingKey.REQUEST_ID_KEY);

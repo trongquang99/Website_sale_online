@@ -5,10 +5,13 @@ import com.website.online.sale.dtos.response.statistic.ProductStatisticResponse;
 import com.website.online.sale.dtos.response.statistic.PurchasedProductType;
 import com.website.online.sale.model.*;
 import com.website.online.sale.repository.*;
+import com.website.online.sale.utils.AsyncUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class CustomerStatisticServiceImpl implements CustomerStatisticService {
@@ -34,6 +37,8 @@ public class CustomerStatisticServiceImpl implements CustomerStatisticService {
 
     @Override
     public List<CustomerStatisticResponse> getCustomerStatistic() {
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
         //Khoi tao 1 list<dtoResponse>
         List<CustomerStatisticResponse> customerStatisticResponseList = new ArrayList<>();
 
@@ -44,98 +49,96 @@ public class CustomerStatisticServiceImpl implements CustomerStatisticService {
         // TH1: KH đã mua sp
         // TH2: chưa từng mua => để số luong mua và so luong loai sp = 0 ( có thể bỏ)
         khachHangs.forEach(khachHang -> {
-            // Khởi tạo 1 dtoResponse tương ứng vs khachHang
-            CustomerStatisticResponse customerStatisticResponse = new CustomerStatisticResponse();
+            //tạo đa luồng
+//            executor.submit(() -> {
+                CustomerStatisticResponse customerStatisticResponse = getCustomerStatisticResponse(khachHang);
 
-            // add 1 số thuộc tính đã có từ đối Khachhang
-            customerStatisticResponse.setId(khachHang.getId());
-            customerStatisticResponse.setName(khachHang.getTen());
-            customerStatisticResponse.setPhone(khachHang.getSdt());
-            customerStatisticResponse.setAddress(khachHang.getDiaChi());
+                // dtoResponse đủ thuộc tính mới add vào list<dtoResponse> => count list
+                customerStatisticResponseList.add(customerStatisticResponse);
+//            });
+//            try {
+//                Thread.sleep(20);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+        });
+        return customerStatisticResponseList;
+    }
 
-            //Khoi tao thuoc tinh 2 list
-            List<CustomerStatisticResponse.PurchasedProduct> purchasedProducts = new ArrayList<>();
-            Set<PurchasedProductType> purchasedProductTypeSet = new HashSet<>();
+    private CustomerStatisticResponse getCustomerStatisticResponse(KhachHang khachHang) {
+        // Khởi tạo 1 dtoResponse tương ứng vs khachHang
+        CustomerStatisticResponse customerStatisticResponse = new CustomerStatisticResponse();
 
-            /// tim sp của KH => xử lý 2 thuộc tính list cho dtoResponse
-            List<HoaDon> hoaDons = hoaDonRepository.findByIdKh(khachHang.getId());
-            List<Long> hoaDonsId = hoaDons.stream().map(HoaDon::getId).toList();
-            List<HoaDonSanPham> hoaDonSanPhams = hoaDonSanPhamRepository.findByIdHdIn(hoaDonsId);
+        // add 1 số thuộc tính đã có từ đối Khachhang
+        customerStatisticResponse.setId(khachHang.getId());
+        customerStatisticResponse.setName(khachHang.getTen());
+        customerStatisticResponse.setPhone(khachHang.getSdt());
+        customerStatisticResponse.setAddress(khachHang.getDiaChi());
 
-            hoaDonSanPhams.forEach(hoaDonSanPham -> {
-                Optional<SanPham> optionalSanPham = sanPhamRepository.findById(hoaDonSanPham.getIdSp());
-                if (optionalSanPham.isPresent()) {
-                    SanPham sanPham = optionalSanPham.get();
+        //Khoi tao thuoc tinh 2 list
+        List<CustomerStatisticResponse.PurchasedProduct> purchasedProducts = new ArrayList<>();
+        Set<PurchasedProductType> purchasedProductTypeSet = new HashSet<>();
 
-                    // Kiểm tra sản phẩm đã tồn tại trong danh sách chưa
-                    CustomerStatisticResponse.PurchasedProduct existingProduct = null;
-                    for (CustomerStatisticResponse.PurchasedProduct purchasedProduct : purchasedProducts) {
-                        if (purchasedProduct.getId().equals(sanPham.getId())) {
-                            existingProduct = purchasedProduct;
-                            break; // Dừng lại nếu tìm thấy
-                        }
+        /// tim sp của KH => xử lý 2 thuộc tính list cho dtoResponse
+        List<HoaDon> hoaDons = hoaDonRepository.findByIdKh(khachHang.getId());
+        List<Long> hoaDonsId = hoaDons.stream().map(HoaDon::getId).toList();
+        List<HoaDonSanPham> hoaDonSanPhams = hoaDonSanPhamRepository.findByIdHdIn(hoaDonsId);
+
+        hoaDonSanPhams.forEach(hoaDonSanPham -> {
+            Optional<SanPham> optionalSanPham = sanPhamRepository.findById(hoaDonSanPham.getIdSp());
+            if (optionalSanPham.isPresent()) {
+                SanPham sanPham = optionalSanPham.get();
+
+                // Kiểm tra sản phẩm đã tồn tại trong danh sách chưa
+                CustomerStatisticResponse.PurchasedProduct existingProduct = null;
+                for (CustomerStatisticResponse.PurchasedProduct purchasedProduct : purchasedProducts) {
+                    if (purchasedProduct.getId().equals(sanPham.getId())) {
+                        existingProduct = purchasedProduct;
+                        break; // Dừng lại nếu tìm thấy
                     }
-
-                    if (existingProduct != null) {
-                        // Nếu đã tồn tại, tăng số lượng
-                        existingProduct.setQuantity(existingProduct.getQuantity() + hoaDonSanPham.getSoLuong());
-                    } else {
-                        // Nếu chưa tồn tại, thêm mới
-                        CustomerStatisticResponse.PurchasedProduct purchasedProduct = new CustomerStatisticResponse.PurchasedProduct();
-                        purchasedProduct.setId(sanPham.getId());
-                        purchasedProduct.setName(sanPham.getTen());
-                        purchasedProduct.setQuantity(sanPham.getSoLuong());
-                        purchasedProducts.add(purchasedProduct);
-                    }
-                    // Xử lý sp đã mua
-//                    CustomerStatisticResponse.PurchasedProduct purchasedProduct = new CustomerStatisticResponse.PurchasedProduct();
-//                    purchasedProduct.setId(sanPham.getId());
-//                    purchasedProduct.setName(sanPham.getTen());
-//                    purchasedProduct.setQuantity(sanPham.getSoLuong());
-//
-//                    // check san pham da có chua => viết check
-//                    // TH1: chua có thì adđ luôn: purchasedProducts.add(purchasedProduct);
-//                    // TH2: đã có => tăng quantity của sp đó > xử lý thêm
-//                    purchasedProducts.add(purchasedProduct);
-
-                    //Xử lý loai sp da mua => xử lý lại menu
-//                    PurchasedProductType purchasedProductType = new PurchasedProductType();
-//                    purchasedProductType.setName(sanPham.getTen()); // tên menu
-                    List<Danhmuccon> danhmuccons = danhmucconRepository.findByIdDm(sanPham.getIdDmc());
-                    danhmuccons.forEach(danhmuccon -> {
-                        Optional<Menu> menuOptional = menuRepository.findById(danhmuccon.getIdDm());
-                        if(menuOptional.isPresent()){
-                            Menu menu = menuOptional.get();
-                            PurchasedProductType purchasedProductType = new PurchasedProductType();
-                            purchasedProductType.setId(menu.getId());
-                            purchasedProductType.setName(menu.getTen());
-
-                            purchasedProductTypeSet.add(purchasedProductType);
-                        }
-                    });
                 }
-            });
 
-            //Add 2 thuộc tính list
-            customerStatisticResponse.setPurchasedProducts(purchasedProducts);
-            customerStatisticResponse.setPurchasedProductTypes(purchasedProductTypeSet.stream().toList());
+                if (existingProduct != null) {
+                    // Nếu đã tồn tại, tăng số lượng
+                    existingProduct.setQuantity(existingProduct.getQuantity() + hoaDonSanPham.getSoLuong());
+                } else {
+                    // Nếu chưa tồn tại, thêm mới
+                    CustomerStatisticResponse.PurchasedProduct purchasedProduct = new CustomerStatisticResponse.PurchasedProduct();
+                    purchasedProduct.setId(sanPham.getId());
+                    purchasedProduct.setName(sanPham.getTen());
+                    purchasedProduct.setQuantity(sanPham.getSoLuong());
+                    purchasedProducts.add(purchasedProduct);
+                }
+                List<Danhmuccon> danhmuccons = danhmucconRepository.findByIdDm(sanPham.getIdDmc());
+                danhmuccons.forEach(danhmuccon -> {
+                    Optional<Menu> menuOptional = menuRepository.findById(danhmuccon.getIdDm());
+                    if(menuOptional.isPresent()){
+                        Menu menu = menuOptional.get();
+                        PurchasedProductType purchasedProductType = new PurchasedProductType();
+                        purchasedProductType.setId(menu.getId());
+                        purchasedProductType.setName(menu.getTen());
 
-            //add hai số lượng
-
-            // Tính số lượng sản phẩm và loại sản phẩm
-            long totalQuantity = 0L;
-            for (CustomerStatisticResponse.PurchasedProduct purchasedProduct : purchasedProducts) {
-                totalQuantity = totalQuantity + purchasedProduct.getQuantity();
+                        purchasedProductTypeSet.add(purchasedProductType);
+                    }
+                });
             }
-            customerStatisticResponse.setNumberPurchasedProduct(totalQuantity);
-
-            customerStatisticResponse.setNumberPurchasedProductType(purchasedProductTypeSet.size());
-
-            // dtoResponse đủ thuộc tính mới add vào list<dtoResponse> => count list
-            customerStatisticResponseList.add(customerStatisticResponse);
         });
 
-        return customerStatisticResponseList;
+        //Add 2 thuộc tính list
+        customerStatisticResponse.setPurchasedProducts(purchasedProducts);
+        customerStatisticResponse.setPurchasedProductTypes(purchasedProductTypeSet.stream().toList());
+
+        //add hai số lượng
+
+        // Tính số lượng sản phẩm và loại sản phẩm
+        long totalQuantity = 0L;
+        for (CustomerStatisticResponse.PurchasedProduct purchasedProduct : purchasedProducts) {
+            totalQuantity = totalQuantity + purchasedProduct.getQuantity();
+        }
+        customerStatisticResponse.setNumberPurchasedProduct(totalQuantity);
+
+        customerStatisticResponse.setNumberPurchasedProductType(purchasedProductTypeSet.size());
+        return customerStatisticResponse;
     }
 
     @Override
